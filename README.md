@@ -188,7 +188,7 @@ fraud-detection-case-study/
 │
 └── presentation/
     ├── Fraud_Detection_Case_Study.pptx
-    ├── Fraud_Detection_Case_Study.pdf
+
     
 ```
 
