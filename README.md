@@ -129,6 +129,11 @@ Of 1,440 fraud cases in the test period: **1,206 detected, 234 missed**. Of 1,32
 alerts generated: **91.3% corresponded to real fraud**.
 
 ## Business interpretation
+- **Measured in money rather than transactions, coverage rises from 83.8% to
+~96.8%.** Of ~$736k of fraud value in the test period, ~$712k sits in detected
+transactions and ~$24k in missed ones  detected fraud averages ~$590 against
+~$101 for missed fraud. The model is strongest where the exposure is largest,
+which makes the remaining gap a scoping decision rather than a defect.
 
 - **Deploy as risk-prioritization, not automatic blocking.** Route high-risk transactions
   to human investigation; ~8.7% of alerts are false positives, and even confident false
@@ -140,6 +145,13 @@ alerts generated: **91.3% corresponded to real fraud**.
 - **Low-amount fraud (<~$100) is the main blind spot** — recall falls to ~43-45% under
   $50, vs. ~97-100% above $200, confirmed on two independent time periods. Complementary
   controls are recommended for this segment.
+
+- **The gap is also category-specific.** Three categories — wellness & beauty,
+health, and hyper — account for roughly half of all missed fraud, with wellness
+& beauty the weakest on both sides (~65.9% recall, ~74.2% precision). A
+category-scoped complementary control would close most of the gap at lower
+false-positive cost than lowering the global threshold.
+
 - **The production threshold should be set from business inputs** (investigation
   capacity, cost of missed fraud vs. false positives) not available in this case study —
   0.5631 is a technical validation benchmark only.
