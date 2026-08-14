@@ -160,11 +160,11 @@ performed — none should be inferred.
 fraud-detection-case-study/
 │
 ├── README.md
-├── requirements.txt                        # exact pinned versions (see Reproducibility)
+├── requirements.txt                        
 ├── .gitignore
 │
 ├── notebooks/
-│   └── 01_fraud_detection_analysis.ipynb   # full analytical narrative, all 6 phases
+│   └── 01_fraud_detection_analysis.ipynb   
 │
 ├── src/
 │   ├── __init__.py
@@ -175,16 +175,16 @@ fraud-detection-case-study/
 │   └── evaluation.py                       # metrics, threshold analysis, experiment runner
 │
 ├── models/
-│   ├── final_model_xgboost_setB.joblib     # locked, fitted pipeline (preprocessing + model)
+│   ├── final_model_xgboost_setB.joblib     
 │   ├── final_model_config.json             # features, hyperparameters, threshold, metrics
-│   └── final_metrics_summary.csv           # corrected dummy baselines + final test metrics
+│   └── final_metrics_summary.csv           
 │
 ├── Data/
-│   ├── Input/                              # place fraud.csv here (gitignored, not redistributed)
-│   └── Output/figures/                     # all exported chart PNGs (gitignored)
+│   ├── Input/                             
+│   └── Output/figures/                    
 │
 ├── Requirements/
-│   └── Interview_Case_Study.docx           # original case brief
+│   └── Interview_Case_Study.docx           
 │
 └── presentation/
     ├── Fraud_Detection_Case_Study.pptx
