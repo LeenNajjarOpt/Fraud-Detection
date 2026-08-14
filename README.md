@@ -1,6 +1,6 @@
 # Fraud Detection Case Study
 
-A complete, evidence-driven fraud detection case study — from data audit through a
+A complete, evidence-driven fraud detection case study  from data audit through a
 locked, tested model and business recommendations. Built as a technical case study for a
 Deloitte interview process. See
 [Requirements/Interview_Case_Study.docx](Requirements/Interview_Case_Study.docx) for the
@@ -15,7 +15,7 @@ once, and that result is final.
 
 Detect fraudulent card transactions in a highly imbalanced dataset (~1.2% fraud) using
 only information that would realistically be available at the moment a transaction is
-scored, and turn the result into a defensible, business-usable recommendation — not just
+scored, and turn the result into a defensible, business-usable recommendation  not just
 a model.
 
 ## Dataset overview
@@ -27,11 +27,11 @@ a model.
 - No missing values, no duplicate rows. Customers and merchants recur throughout the
   whole window; fraud rate and category mix both drift over it (1.52% → ~1.08% fraud
   rate from day 0 to the test period).
-- Dataset placed at `Data/Input/fraud.csv` (not committed — see Setup below).
+- Dataset placed at `Data/Input/fraud.csv` (not committed  see Setup below).
 
 ## Analytical methodology
 
-Chronological, not random, train/validation/test split — because entities recur across
+Chronological, not random, train/validation/test split  because entities recur across
 the whole window and fraud/category composition drift over time, a random split would
 both leak future customer behavior into training and evaluate on a blended mix of time
 periods rather than a genuine future one.
@@ -42,20 +42,20 @@ periods rather than a genuine future one.
 | Validation | 120–143 | 86,498 | 960 | 1.110% |
 | Test | 144–179 | 133,231 | 1,440 | 1.081% |
 
-This is a realistic *future-period* evaluation for this dataset — not a claim that it
+This is a realistic *future-period* evaluation for this dataset  not a claim that it
 eliminates every possible form of leakage.
 
 ## Leakage prevention
 
 Every customer-behavioral feature is built from transactions with `step` **strictly
-less than** the current transaction's step — never `<=`. This distinction is not
+less than** the current transaction's step  never `<=`. This distinction is not
 cosmetic: 7.31% of rows share a `(customer, step)` pair (multiple transactions from the
 same customer within the same hour), and the dataset provides no reliable ordering within
 an hour. Transactions sharing a step therefore cannot leak into each other's historical
 features in either direction; every row in the same step gets identical, same-step-blind
 history. Verified by (a) a brute-force recomputation of historical features on a random
 sample of rows, and (b) an explicit check that same-step transactions share identical
-feature values. No feature — behavioral or otherwise — ever uses the `fraud` label from
+feature values. No feature  behavioral or otherwise  ever uses the `fraud` label from
 any transaction (no target encoding).
 
 ## Feature engineering
@@ -67,10 +67,10 @@ any transaction (no target encoding).
   the customer's own prior mean/median, time since last transaction, first-transaction
   flag).
 - **Feature Set C** (evaluated, not selected, 19 features): Set B + 3 non-target
-  merchant-history features — rejected, see Model Selection below.
+  merchant-history features  rejected, see Model Selection below.
 - Cold-start (a customer's first transaction) is handled with an explicit indicator flag
   plus median imputation fit on the training fold only, inside the same scikit-learn
-  pipeline used for scoring — no separate, easy-to-desync imputation logic.
+  pipeline used for scoring  no separate, easy-to-desync imputation logic.
 
 ## Models evaluated
 
@@ -83,7 +83,7 @@ and two sanity baselines (amount-only, amount+category).
 The ~1.2% prevalence was treated as an empirical modeling question, not a reason to
 reach for resampling by default. Class weighting was tested and did **not** improve
 threshold-independent ranking quality (Average Precision) or the best achievable
-validation F1 after its own threshold was independently optimized — it traded precision
+validation F1 after its own threshold was independently optimized  it traded precision
 for recall at a fixed threshold without producing a better underlying model. SMOTE was
 considered and explicitly **not** applied: the unweighted model already showed strong
 minority-class discrimination, weighting hadn't demonstrated an unresolved ranking
@@ -99,11 +99,11 @@ XGBoost + Feature Set B, unweighted. Selected on validation evidence:
   XGBoost, across all three feature sets and both weighting strategies.
 - ~10x faster to train than the closest Random Forest configuration (0.9336 PR-AUC).
 - Feature Set C (merchant history) rejected: for XGBoost, PR-AUC was flat-to-slightly-negative
-  vs. Set B — added state and complexity without measurable benefit, not evidence of
+  vs. Set B  added state and complexity without measurable benefit, not evidence of
   overfitting.
 - A bounded, 12-configuration hyperparameter search around the baseline found nothing
   clearing a "meaningful improvement" bar (best alternative: +0.0011 PR-AUC, +0.0007 F1,
-  at ~2x the trees) — the baseline configuration was retained deliberately, not left
+  at ~2x the trees)  the baseline configuration was retained deliberately, not left
   unfinished.
 
 ## Final test results (unseen future period, evaluated once)
@@ -117,7 +117,7 @@ XGBoost + Feature Set B, unweighted. Selected on validation evidence:
 | F1 | 0.8833 | **0.8736** |
 | Accuracy | 99.75% | **99.74%** |
 
-Confusion matrix at the locked threshold (0.5631, F1-maximizing on validation only — a
+Confusion matrix at the locked threshold (0.5631, F1-maximizing on validation only  a
 technical benchmark, not a claimed economically optimal production threshold):
 
 |  | Predicted legit | Predicted fraud |
@@ -139,21 +139,30 @@ which makes the remaining gap a scoping decision rather than a defect.
   to human investigation; ~8.7% of alerts are false positives, and even confident false
   positives resemble genuine fraud closely.
 - **Category, amount, and merchant are the model's dominant signals** (confirmed via
-  permutation importance and native TreeSHAP — the built-in XGBoost gain importance was
+  permutation importance and native TreeSHAP  the built-in XGBoost gain importance was
   found to overstate merchant's share due to its higher one-hot cardinality and was
   superseded). Customer behavioral history adds real, smaller, incremental value.
-- **Low-amount fraud (<~$100) is the main blind spot** — recall falls to ~43-45% under
+- **Low-amount fraud (<~$100) is the main blind spot**  recall falls to ~43-45% under
   $50, vs. ~97-100% above $200, confirmed on two independent time periods. Complementary
   controls are recommended for this segment.
 
-- **The gap is also category-specific.** Three categories — wellness & beauty,
-health, and hyper — account for roughly half of all missed fraud, with wellness
+  ## Operational layer
+
+A four-page Power BI report built on the scored test output (`PowerBI/`).
+The Threshold & Capacity page uses a disconnected parameter table so alert
+volume, recall, precision, review hours and illustrative net value all
+recalculate live as the operating threshold moves  turning the threshold
+recommendation into something the business can test against its own capacity
+rather than a fixed number.
+
+- **The gap is also category-specific.** Three categories  wellness & beauty,
+health, and hyper  account for roughly half of all missed fraud, with wellness
 & beauty the weakest on both sides (~65.9% recall, ~74.2% precision). A
 category-scoped complementary control would close most of the gap at lower
 false-positive cost than lowering the global threshold.
 
 - **The production threshold should be set from business inputs** (investigation
-  capacity, cost of missed fraud vs. false positives) not available in this case study —
+  capacity, cost of missed fraud vs. false positives) not available in this case study 
   0.5631 is a technical validation benchmark only.
 
 ## Limitations
@@ -164,7 +173,7 @@ categories have zero observed fraud and are untested; no business cost data was 
 for threshold optimization; the behavioral features require reliable low-latency
 customer-history infrastructure in production; almost no evidence exists on genuinely new
 customers/merchants since nearly all recur across splits; and no fairness analysis was
-performed — none should be inferred.
+performed  none should be inferred.
 
 ## Repository structure
 
@@ -216,7 +225,7 @@ late in the project. Flagged here rather than done silently.
 pip install -r requirements.txt
 ```
 
-Place the raw dataset at `Data/Input/fraud.csv`. It is not committed to version control —
+Place the raw dataset at `Data/Input/fraud.csv`. It is not committed to version control 
 redistribution rights for the source data were not confirmed, so it is excluded from
 GitHub; obtain it from the original case study source and place it at that path.
 
@@ -228,13 +237,13 @@ Open `notebooks/01_fraud_detection_analysis.ipynb` and run all cells top to bott
 jupyter nbconvert --to notebook --execute --inplace notebooks/01_fraud_detection_analysis.ipynb
 ```
 
-The notebook is self-contained and deterministic (`RANDOM_STATE=42` throughout) —
+The notebook is self-contained and deterministic (`RANDOM_STATE=42` throughout) 
 re-running it reproduces every number and figure referenced here. Runtime is a few
 minutes, dominated by the Phase 4/5 model grids.
 
 ## Reproducibility
 
-- All splits are chronological (`src/data.py`) — see Analytical Methodology above.
+- All splits are chronological (`src/data.py`)  see Analytical Methodology above.
 - All feature engineering is leakage-safe by construction and checked by assertions in
   `src/validation.py`.
 - The TEST split is loaded into the notebook exactly once (Phase 5), after the model,
@@ -245,7 +254,7 @@ minutes, dominated by the Phase 4/5 model grids.
   `seaborn==0.12.2`). This matters more than usual here: scikit-learn's own pickle format
   is not guaranteed compatible across even minor versions, and `models/final_model_xgboost_setB.joblib`
   was confirmed to reload and reproduce identical test predictions only when the pinned
-  versions are used — a mismatched `scikit-learn` version (e.g. 1.2.2) raised an
+  versions are used  a mismatched `scikit-learn` version (e.g. 1.2.2) raised an
   `AttributeError` on unpickling in testing. Use the pinned versions.
 - To independently verify the saved model without re-running the notebook:
 
