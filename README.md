@@ -189,7 +189,7 @@ fraud-detection-case-study/
 └── presentation/
     ├── Fraud_Detection_Case_Study.pptx
     ├── Fraud_Detection_Case_Study.pdf
-    └── interview_defense.md                # Q&A prep, 30s / 3min talking points
+    
 ```
 
 **Note on structure:** figures live under `Data/Output/figures/` rather than a top-level
