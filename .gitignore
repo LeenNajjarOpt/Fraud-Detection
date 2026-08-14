@@ -1,0 +1,43 @@
+# Raw dataset: not versioned (redistribution rights unconfirmed) -- place fraud.csv
+# here locally per README "Setup" instructions.
+Data/Input/*
+!Data/Input/.gitkeep
+
+# Generated figures and the Power BI monitoring export ARE versioned -- they're curated
+# deliverables referenced by the notebook and presentation, not scratch/derived data.
+Data/Output/*
+!Data/Output/.gitkeep
+!Data/Output/figures/
+!Data/Output/powerbi/
+
+# Final model artifacts ARE versioned -- small, curated deliverables (see presentation/
+# and README "Repository structure"). Anything else dropped in models/ during
+# experimentation is not.
+models/*
+!models/.gitkeep
+!models/final_model_xgboost_setB.joblib
+!models/final_model_config.json
+!models/final_metrics_summary.csv
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# OS / editor
+.DS_Store
+.vscode/
+
+# Office lock/temp files (created while a .pptx/.docx is open)
+~$*
+
+
+.claude/
+
+PowerBI/Prompt-Library-AI-Team
+presentation/interview_defense.md

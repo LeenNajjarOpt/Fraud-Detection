@@ -1,0 +1,57 @@
+FRAUD MONITORING TEST EXPORT -- VALIDATION SUMMARY
+=======================================================
+Export file: fraud_monitoring_test.csv
+Source model: models/final_model_xgboost_setB.joblib (frozen, Phase 5)
+Locked technical threshold: 0.5631 (exact value used for classification: 0.5630664825439453)
+
+ROW COUNTS
+  Row count:          133,231
+  Actual fraud:       1,440
+  Actual legitimate:  131,791
+  Alerts (is_alert=1):1,321
+
+CONFUSION MATRIX
+  TP: 1,206   FP: 115   FN: 234   TN: 131,676
+
+METRICS (recomputed independently from the exported CSV)
+  Precision: 91.29%
+  Recall:    83.75%
+  F1:        0.8736
+  PR-AUC:    0.9482
+
+  Reconciliation vs. locked Phase 5 test results: ALL CHECKS PASSED
+
+SCORE RANGE
+  Minimum fraud_score: 0.000003
+  Maximum fraud_score: 0.999628
+
+MISSING VALUE CHECK
+  Missing actual_fraud: 0
+  Missing fraud_score:  0
+  is_first_customer_tx = 1 (customer's first-ever transaction, full-dataset cold start): 0 rows in this export
+    -- the one customer newly appearing in TEST (Phase 3) had already transacted in an
+    earlier split, so no true first-ever transaction lands within the TEST period itself.
+  customer_prior_std_amount: 1 NaN -- customer C1809646275 at step 149 has exactly 1 prior
+    transaction (customer_prior_tx_count = 1); standard deviation of a single observation
+    is mathematically undefined. All other behavioral columns: 0 NaN in this export.
+    This is expected cold-start behavior per the Phase 3 methodology (std requires >= 2
+    prior transactions), not a data defect. Power BI will read this as a null/blank cell.
+
+DUPLICATE CHECK
+  Duplicate rows: 0
+
+LEAKAGE CHECK
+  Independent brute-force spot check (n=100) against raw source data: PASS
+  All historical features computed using ONLY transactions with step < current step (Phase 3 methodology, reused unmodified -- not recomputed for this export).
+
+DATA QUALITY CHECKS
+  one_row_per_test_txn: PASS
+  no_duplicate_rows: PASS
+  no_missing_actual_fraud: PASS
+  no_missing_fraud_score: PASS
+  fraud_score_in_range: PASS
+  predicted_fraud_matches_threshold: PASS
+  prediction_outcome_consistent: PASS
+  amount_band_assigned: PASS
+  amount_band_sort_valid: PASS
+  categorical_labels_clean: PASS

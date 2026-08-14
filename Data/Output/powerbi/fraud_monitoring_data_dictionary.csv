@@ -1,0 +1,33 @@
+field_name,data_type,description,source,example,power_bi_usage
+step,Integer,Hourly time index of the transaction (0-179 across the full dataset; 144-179 in this TEST-only export).,Original Data,150,Time axis / sort key
+customer,Text,Anonymized customer identifier.,Original Data,C1093826151,Filter / drill-through (avoid displaying to end users at scale -- high cardinality)
+merchant,Text,Anonymized merchant identifier.,Original Data,M1823072687,"Filter / slicer, merchant-level analysis"
+category,Text,Transaction category.,Original Data,es_health,"Filter / slicer, category-level analysis"
+amount,Decimal,Transaction amount.,Original Data,134.63,"Measure base field (sum, average); histogram"
+age,Text,Customer age band code as provided in source data ('U' = Enterprise/unknown).,Original Data,3,Filter / slicer
+gender,Text,Customer gender code as provided in source data ('E' = Enterprise).,Original Data,F,Filter / slicer
+day,Integer,"Calendar day within the observation window, derived as step // 24. No real calendar date exists in the source data.",Feature Engineering,6,Time-series axis
+hour_of_day,Integer,"Hour within the day, derived as step % 24.",Feature Engineering,18,Time-of-day axis (Phase 2 found no strong standalone pattern here -- use with caution)
+actual_fraud,Integer (0/1),"Ground-truth label: 1 = confirmed fraud, 0 = legitimate.",Original Data,1,Base field for all confusion-matrix / precision / recall DAX measures
+actual_status,Text,Human-readable version of actual_fraud.,Derived for BI,Fraud,"Slicer, legend, tooltip"
+fraud_score,Decimal (0-1),"Positive-class probability output by the frozen final XGBoost (Feature Set B, unweighted) model.",Model Output,0.7842,"Distribution charts, risk sorting, base field for threshold-sensitivity what-if visuals"
+technical_threshold,Decimal,"Constant column: the locked, validation-selected technical threshold (0.5631) used to convert fraud_score into a decision. NOT an economically optimized production threshold.",Model Output,0.5631,Reference line on score-distribution charts
+predicted_fraud,Integer (0/1),"1 if fraud_score >= locked threshold, else 0. Computed once, frozen -- not user-adjustable in this export.",Model Output,1,Base field for confusion-matrix measures
+predicted_status,Text,Human-readable version of predicted_fraud.,Derived for BI,Alert,"Slicer, legend, tooltip"
+prediction_outcome,Text,TP / FP / FN / TN classification from actual_fraud x predicted_fraud.,Derived for BI,TP,"Confusion-matrix visual, color-coded scatter/table"
+prediction_outcome_label,Text,Business-readable version of prediction_outcome (Fraud Detected / False Alert / Fraud Missed / Correct Legitimate).,Derived for BI,Fraud Detected,"Legend, tooltip, executive-facing visuals"
+is_alert,Integer (0/1),Equivalent to predicted_fraud; provided as a clearly-named field for alert-volume/alert-rate DAX measures.,Derived for BI,1,SUM() for alert volume; AVERAGE() for alert rate
+amount_band,Text,"Transaction-amount segment, aligned to the Phase 5 error-analysis bins.",Derived for BI,$100-200,"Slicer, axis for recall/precision-by-band visuals"
+amount_band_sort,Integer,Integer sort key (0-6) so Power BI displays amount_band in ascending amount order rather than alphabetically.,Derived for BI,3,Sort-by-column for amount_band
+is_enterprise,Integer (0/1),Deterministic flag: 1 if age=='U' and gender=='E' (Enterprise account). One of the 16 Feature Set B model inputs.,Feature Engineering,0,"Slicer, segment comparison"
+customer_prior_tx_count,Integer,Count of this customer's transactions with step strictly less than the current transaction's step. 0 for a customer's first observed transaction.,Feature Engineering,42,Customer-tenure / history-depth analysis
+customer_prior_mean_amount,Decimal,Mean amount of this customer's prior transactions (step < current). NaN if customer_prior_tx_count = 0.,Feature Engineering,38.20,Behavioral baseline comparison
+customer_prior_median_amount,Decimal,Median amount of this customer's prior transactions. NaN if customer_prior_tx_count = 0.,Feature Engineering,31.50,Behavioral baseline comparison
+customer_prior_std_amount,Decimal,Standard deviation of this customer's prior transaction amounts. NaN if customer_prior_tx_count < 2.,Feature Engineering,22.10,Behavioral volatility analysis
+customer_prior_max_amount,Decimal,Maximum amount among this customer's prior transactions. NaN if customer_prior_tx_count = 0.,Feature Engineering,310.00,Behavioral baseline comparison
+customer_prior_total_amount,Decimal,Sum of this customer's prior transaction amounts. 0 for a customer's first transaction.,Feature Engineering,1604.35,Customer lifetime-value-to-date context
+amount_vs_prior_customer_mean,Decimal (ratio),Current amount divided by customer_prior_mean_amount. NaN if the denominator is 0 or undefined.,Feature Engineering,6.71,Deviation-from-normal analysis -- one of the model's behavioral signals
+amount_vs_prior_customer_median,Decimal (ratio),Current amount divided by customer_prior_median_amount. NaN if the denominator is 0 or undefined.,Feature Engineering,8.02,Deviation-from-normal analysis
+time_since_customer_last_tx,Integer (steps),Current step minus this customer's previous transaction step. NaN for a customer's first transaction.,Feature Engineering,5,Recency analysis
+is_first_customer_tx,Integer (0/1),"1 if this is the customer's first observed transaction (cold start), else 0.",Feature Engineering,0,Cold-start segment analysis
+risk_band,Text,"DASHBOARD VISUALIZATION BAND ONLY -- NOT a validated business threshold. Low / Medium (Below threshold) / Medium (Alert) / High, derived from fraud_score for visual triage. The only validated decision cutoff is technical_threshold (0.5631); do not present risk_band boundaries as model-approved or economically optimized.",Derived for BI,High,Visual triage / color-coded risk heatmap only
